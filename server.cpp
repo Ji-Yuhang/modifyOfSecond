@@ -15,16 +15,19 @@
 #include<sys/socket.h>
 #include<sys/wait.h>
 
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+
+
 using namespace std;
 struct Algo {
-	//   char types;
-
+ 	char type;
 	int first;
 	int second;
-}temp;
+};
 int main()
 {
-	int sum;
+	int sum(0);
 	char *tmp1,*tmp2;
 	int sockfd ,new_fd;
 	struct sockaddr_in *their,*my;
@@ -69,15 +72,26 @@ int main()
 			exit(1);
 
 		}
-		memset(&temp,0,sizeof(temp));
-		memcpy(&temp,buff,sizeof(temp));	
-       if(temp.first == 90909090 && temp.second == 9090909)
-		   exit(0);
+		//memset(&temp,0,sizeof(temp));
+		//memcpy(&temp,buff,sizeof(temp));	
+       //if(temp.first == 90909090 && temp.second == 9090909)
+			 //exit(0);
 
 		cout << "recieved " << numbytes << "bytes " << endl;
-		cout << "The message is:" << temp.first << "\t"<<  temp.second << endl;
-		sum =(temp.first) + (temp.second);
-		cout << sum << endl;
+    struct Algo receive;
+
+    std::istringstream is(buff);
+  boost::archive::text_iarchive ia(is);
+  // 链式调用 os 对象的方法 operator>>
+  ia >> receive.type >> receive.first >> receive.second;
+
+  // 输出 receive ，并将其的 first second 成员转换为int 类型输出，因为 int8_t 类型在终端不显示
+  std::cout << receive.type << int(receive.first) <<" "<< int(receive.second) << std::endl;
+
+
+		//cout << "The message is:" << temp.first << "\t"<<  temp.second << endl;
+		sum =(receive.first) + (receive.second);
+		cout <<"send: "<< sum << endl;
 		if(send(new_fd,&sum,sizeof( sum),0)== -1)
 			perror("send");
 		close(new_fd);
